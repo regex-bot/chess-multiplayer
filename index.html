@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Mode Selection Screen -->
+    <div id="modeSelection" class="mode-screen">
+        <div class="mode-content">
+            <h1>Chess Game</h1>
+            <p>Choose Game Mode</p>
+            <div class="mode-buttons">
+                <button id="localModeBtn" class="mode-btn">
+                    <span class="mode-title">Local Multiplayer</span>
+                    <span class="mode-desc">Play on same device</span>
+                </button>
+                <button id="onlineModeBtn" class="mode-btn">
+                    <span class="mode-title">Online Multiplayer</span>
+                    <span class="mode-desc">Play with someone online</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Online Room Setup -->
+    <div id="roomSetup" class="mode-screen" style="display: none;">
+        <div class="mode-content">
+            <h1>Online Multiplayer</h1>
+            <div class="room-options">
+                <div class="color-selection">
+                    <label>Choose Your Color:</label>
+                    <div class="color-buttons">
+                        <button id="whiteColorBtn" class="color-btn active">White</button>
+                        <button id="blackColorBtn" class="color-btn">Black</button>
+                    </div>
+                </div>
+                <button id="createRoomBtn" class="mode-btn">Create New Game</button>
+                <div class="divider">OR</div>
+                <input type="text" id="roomIdInput" placeholder="Enter Room Code">
+                <button id="joinRoomBtn" class="mode-btn">Join Game</button>
+            </div>
+            <button id="backToModeBtn" class="back-btn">← Back</button>
+        </div>
+    </div>
+
+    <!-- Waiting Screen -->
+    <div id="waitingScreen" class="mode-screen" style="display: none;">
+        <div class="mode-content">
+            <h1>Waiting for opponent...</h1>
+            <div class="room-info">
+                <p>Room Code:</p>
+                <div class="room-code" id="displayRoomCode"></div>
+                <button id="copyRoomBtn">Copy Code</button>
+            </div>
+            <p class="waiting-text">Share this code with your opponent</p>
+            <button id="cancelWaitBtn" class="back-btn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen" class="container" style="display: none;">
+        <div class="game-info">
+            <h1>Chess</h1>
+            <div id="playerInfo" style="margin: 10px 0; font-size: 14px;"></div>
+            <div id="status">White's Turn</div>
+            <div class="game-controls">
+                <button id="resetBtn">New Game</button>
+                <button id="offerDrawBtn" style="display: none;">Offer Draw</button>
+                <button id="leaveRoomBtn" style="display: none;">Leave Room</button>
+                <button id="exitGameBtn">Exit to Menu</button>
+            </div>
+        </div>
+        <div class="game-layout">
+            <div class="board-container">
+                <div id="chessboard"></div>
+            </div>
+            <div class="move-history">
+                <h3>Move History</h3>
+                <div id="moveList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Promotion Modal -->
+    <div id="promotionModal" class="modal">
+        <div class="modal-content">
+            <h2>Choose Promotion</h2>
+            <div class="promotion-choices">
+                <button data-piece="q">♛ Queen</button>
+                <button data-piece="r">♜ Rook</button>
+                <button data-piece="b">♝ Bishop</button>
+                <button data-piece="n">♞ Knight</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content game-over-content">
+            <h2 id="gameOverTitle">Game Over</h2>
+            <p id="gameOverMessage"></p>
+            <div id="rematchSection" style="display: none;">
+                <p id="rematchStatus">Waiting for opponent...</p>
+                <div class="draw-buttons">
+                    <button id="rematchBtn" class="mode-btn">Play Again</button>
+                    <button id="declineRematchBtn" class="back-btn">Exit to Menu</button>
+                </div>
+            </div>
+            <button id="gameOverBtn" class="mode-btn" style="display: none;">OK</button>
+        </div>
+    </div>
+
+    <!-- Draw Offer Modal -->
+    <div id="drawOfferModal" class="modal">
+        <div class="modal-content">
+            <h2>Draw Offer</h2>
+            <p>Your opponent offers a draw. Do you accept?</p>
+            <div class="draw-buttons">
+                <button id="acceptDrawBtn" class="mode-btn">Accept</button>
+                <button id="declineDrawBtn" class="back-btn">Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="chess.js"></script>
+</body>
+</html>
