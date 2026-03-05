@@ -16,13 +16,184 @@ const game = {
     socket: null,
     moves: [],
     selectedColor: 'white',
-    rematchRequested: false
+    rematchRequested: false,
+    timeControl: 0,
+    whiteTime: 0,
+    blackTime: 0,
+    clockInterval: null,
+    activePlayer: 'white',
+    onlineAction: null
 };
 
 const pieces = {
-    white: { k:"♔", q:"♕", r:"♖", b:"♗", n:"♘", p:"♙" },
+    white: { k:"♚", q:"♛", r:"♜", b:"♝", n:"♞", p:"♟" },
     black: { k:"♚", q:"♛", r:"♜", b:"♝", n:"♞", p:"♟" }
 };
+
+document.getElementById('playNowBtn').onclick = () => showModeSelection();
+document.getElementById('navHome').onclick = () => showLandingPage();
+document.getElementById('navPlay').onclick = () => showModeSelection();
+document.getElementById('navAbout').onclick = (e) => {
+    e.preventDefault();
+    showLandingPage();
+    setTimeout(() => {
+        document.getElementById('aboutSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+};
+
+document.getElementById('localModeCard').querySelector('.mode-select-btn').onclick = () => {
+    game.mode = 'local';
+    showTimeControlScreen();
+};
+
+document.getElementById('onlineModeCard').querySelector('.mode-select-btn').onclick = () => {
+    game.mode = 'online';
+    showOnlineRoomSelection();
+};
+
+document.getElementById('createRoomCard').querySelector('.mode-select-btn').onclick = () => {
+    game.onlineAction = 'create';
+    showTimeControlScreen();
+};
+
+document.getElementById('joinRoomCard').querySelector('.mode-select-btn').onclick = () => {
+    game.onlineAction = 'join';
+    showJoinRoom();
+};
+
+document.getElementById('backFromOnlineRoom').onclick = () => showModeSelection();
+
+document.querySelectorAll('.time-card').forEach(card => {
+    card.onclick = () => {
+        document.querySelectorAll('.time-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        game.timeControl = parseInt(card.dataset.time);
+        
+        setTimeout(() => {
+            if (game.mode === 'local') {
+                startLocalGame();
+            } else if (game.mode === 'online') {
+                if (game.onlineAction === 'create') {
+                    showRoomSetup();
+                } else if (game.onlineAction === 'join') {
+                    showJoinRoom();
+                }
+            }
+        }, 300);
+    };
+});
+
+document.getElementById('backToModeBtn').onclick = () => showModeSelection();
+document.getElementById('backToTimeBtn').onclick = () => showOnlineRoomSelection();
+document.getElementById('backToTimeFromJoin').onclick = () => showOnlineRoomSelection();
+
+function showLandingPage() {
+    document.getElementById('landingPage').style.display = 'block';
+    document.getElementById('modeSelection').style.display = 'none';
+    document.getElementById('onlineRoomSelection').style.display = 'none';
+    document.getElementById('timeControlScreen').style.display = 'none';
+    document.getElementById('roomSetup').style.display = 'none';
+    document.getElementById('waitingScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'none';
+}
+
+function showModeSelection() {
+    document.getElementById('landingPage').style.display = 'none';
+    document.getElementById('modeSelection').style.display = 'flex';
+    document.getElementById('onlineRoomSelection').style.display = 'none';
+    document.getElementById('timeControlScreen').style.display = 'none';
+    document.getElementById('roomSetup').style.display = 'none';
+    document.getElementById('waitingScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'none';
+}
+
+function showOnlineRoomSelection() {
+    document.getElementById('landingPage').style.display = 'none';
+    document.getElementById('modeSelection').style.display = 'none';
+    document.getElementById('onlineRoomSelection').style.display = 'flex';
+    document.getElementById('timeControlScreen').style.display = 'none';
+    document.getElementById('roomSetup').style.display = 'none';
+    document.getElementById('waitingScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'none';
+}
+
+function showTimeControlScreen() {
+    document.getElementById('landingPage').style.display = 'none';
+    document.getElementById('modeSelection').style.display = 'none';
+    document.getElementById('onlineRoomSelection').style.display = 'none';
+    document.getElementById('timeControlScreen').style.display = 'flex';
+    document.getElementById('roomSetup').style.display = 'none';
+    document.getElementById('waitingScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'none';
+}
+
+function showRoomSetup() {
+    document.getElementById('landingPage').style.display = 'none';
+    document.getElementById('modeSelection').style.display = 'none';
+    document.getElementById('onlineRoomSelection').style.display = 'none';
+    document.getElementById('timeControlScreen').style.display = 'none';
+    document.getElementById('roomSetup').style.display = 'flex';
+    document.getElementById('joinRoomScreen').style.display = 'none';
+    document.getElementById('waitingScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'none';
+}
+
+function showJoinRoom() {
+    document.getElementById('landingPage').style.display = 'none';
+    document.getElementById('modeSelection').style.display = 'none';
+    document.getElementById('onlineRoomSelection').style.display = 'none';
+    document.getElementById('timeControlScreen').style.display = 'none';
+    document.getElementById('roomSetup').style.display = 'none';
+    document.getElementById('joinRoomScreen').style.display = 'flex';
+    document.getElementById('waitingScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'none';
+}
+
+function showWaitingScreen() {
+    document.getElementById('landingPage').style.display = 'none';
+    document.getElementById('modeSelection').style.display = 'none';
+    document.getElementById('onlineRoomSelection').style.display = 'none';
+    document.getElementById('timeControlScreen').style.display = 'none';
+    document.getElementById('roomSetup').style.display = 'none';
+    document.getElementById('joinRoomScreen').style.display = 'none';
+    document.getElementById('waitingScreen').style.display = 'flex';
+    document.getElementById('gameScreen').style.display = 'none';
+}
+
+function showGameScreen() {
+    document.getElementById('landingPage').style.display = 'none';
+    document.getElementById('modeSelection').style.display = 'none';
+    document.getElementById('onlineRoomSelection').style.display = 'none';
+    document.getElementById('timeControlScreen').style.display = 'none';
+    document.getElementById('roomSetup').style.display = 'none';
+    document.getElementById('joinRoomScreen').style.display = 'none';
+    document.getElementById('waitingScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'flex';
+}
+
+function startLocalGame() {
+    showGameScreen();
+    setupBoard();
+    initializeClock();
+    render();
+    updatePlayerNames();
+    hideChatForLocal();
+}
+
+function hideChatForLocal() {
+    const chatTab = document.querySelector('[data-tab="chat"]');
+    if (chatTab) {
+        chatTab.style.display = 'none';
+    }
+    document.querySelector('[data-tab="moves"]').click();
+}
+
+function showChatForOnline() {
+    const chatTab = document.querySelector('[data-tab="chat"]');
+    if (chatTab) {
+        chatTab.style.display = 'block';
+    }
+}
 
 function setupBoard(){
     game.board = [
@@ -46,8 +217,8 @@ function setupBoard(){
         black: { kingSide: true, queenSide: true }
     };
     game.moves = [];
+    game.activePlayer = 'white';
     document.getElementById("moveList").innerHTML = "";
-    document.getElementById("status").textContent = "White's Turn";
 }
 
 function getColor(p){ if(!p) return null; return p===p.toUpperCase()?"white":"black"; }
@@ -178,9 +349,9 @@ function checkGameState(){
 
     if(!hasMoves){
         game.gameOver=true;
+        stopClock();
         const winner = col==="white"?"Black":"White";
         const message = inCheck ? `Checkmate! ${winner} wins!` : "Stalemate! Draw!";
-        document.getElementById("status").textContent = message;
         showGameOverModal(message, inCheck ? winner : null);
         
         if(game.mode === 'online' && game.socket && game.roomId) {
@@ -188,64 +359,7 @@ function checkGameState(){
         }
         return;
     }
-    if(inCheck)
-        document.getElementById("status").textContent =
-            `${col.charAt(0).toUpperCase()+col.slice(1)} is in Check!`;
 }
-
-function showGameOverModal(message, winner) {
-    const modal = document.getElementById("gameOverModal");
-    const title = document.getElementById("gameOverTitle");
-    const msg = document.getElementById("gameOverMessage");
-    const okBtn = document.getElementById("gameOverBtn");
-    const rematchSection = document.getElementById("rematchSection");
-    const rematchBtn = document.getElementById("rematchBtn");
-    
-    if(winner) {
-        title.textContent = `${winner} Wins! 🎉`;
-        msg.textContent = message;
-    } else {
-        title.textContent = "Draw";
-        msg.textContent = message;
-    }
-    
-    if(game.mode === 'online') {
-        okBtn.style.display = "none";
-        rematchSection.style.display = "block";
-        document.getElementById("rematchStatus").textContent = "Would you like to play again?";
-        rematchBtn.disabled = false;
-        rematchBtn.textContent = "Play Again";
-        game.rematchRequested = false;
-    } else {
-        okBtn.style.display = "block";
-        rematchSection.style.display = "none";
-    }
-    
-    modal.classList.add("active");
-}
-
-document.getElementById("gameOverBtn").onclick = () => {
-    document.getElementById("gameOverModal").classList.remove("active");
-};
-
-document.getElementById("rematchBtn").onclick = () => {
-    console.log('Rematch button clicked');
-    if(game.socket && game.roomId) {
-        console.log('Sending rematch request to room:', game.roomId);
-        game.socket.emit('rematch-request', game.roomId);
-        document.getElementById("rematchStatus").textContent = "Waiting for opponent...";
-        document.getElementById("rematchBtn").disabled = true;
-    }
-};
-
-document.getElementById("declineRematchBtn").onclick = () => {
-    if(game.socket && game.roomId) {
-        game.socket.emit('rematch-response', { roomId: game.roomId, accepted: false });
-        game.socket.emit('leave-room', game.roomId);
-    }
-    document.getElementById("gameOverModal").classList.remove("active");
-    showModeSelection();
-};
 
 function makeMove(fr,fc,tr,tc,flags){
     const piece=game.board[fr][fc];
@@ -262,8 +376,6 @@ function executeMove(fr,fc,tr,tc,promoted,flags){
     const color=getColor(piece);
     const type=piece.toLowerCase();
     const f=flags||{};
-
-    const notation = getMoveNotation(fr, fc, tr, tc, piece, promoted, f);
 
     game.board[tr][tc]=promoted||piece;
     game.board[fr][fc]=null;
@@ -286,6 +398,16 @@ function executeMove(fr,fc,tr,tc,promoted,flags){
         if(fr===rank&&fc===0) game.castling[color].queenSide=false;
     }
 
+    // Switch turn to check if opponent is in check
+    const nextTurn = color === "white" ? "black" : "white";
+    const inCheck = isInCheck(nextTurn, game.board);
+    
+    // Generate notation with check symbol if needed
+    let notation = getMoveNotation(fr, fc, tr, tc, piece, promoted, f);
+    if(inCheck) {
+        notation += '+';
+    }
+
     game.moves.push(notation);
     updateMoveHistory();
 
@@ -297,6 +419,7 @@ function executeMove(fr,fc,tr,tc,promoted,flags){
     }
 
     game.turn=game.turn==="white"?"black":"white";
+    game.activePlayer=game.turn;
     game.selected=null;
     game.legalMoves=[];
     game.promotion=null;
@@ -354,21 +477,186 @@ function updateMoveHistory() {
     moveList.scrollTop = moveList.scrollHeight;
 }
 
-function showPromotionModal(color){
-    const modal=document.getElementById("promotionModal");
-    modal.querySelectorAll("button").forEach(btn=>{
-        btn.textContent=pieces[color][btn.dataset.piece];
-    });
-    modal.classList.add("active");
-    modal.querySelectorAll("button").forEach(btn=>{
-        btn.onclick=()=>{
-            const type=btn.dataset.piece;
-            const promoted=color==="white"?type.toUpperCase():type;
-            modal.classList.remove("active");
-            const {fr,fc,tr,tc,flags}=game.promotion;
-            executeMove(fr,fc,tr,tc,promoted,flags);
-        };
-    });
+function initializeClock() {
+    game.whiteTime = game.timeControl;
+    game.blackTime = game.timeControl;
+    updateClockDisplay();
+    
+    if (game.timeControl > 0) {
+        startClock();
+    }
+}
+
+function startClock() {
+    stopClock();
+    
+    if (game.timeControl === 0) return;
+    
+    game.clockInterval = setInterval(() => {
+        if (game.gameOver) {
+            stopClock();
+            return;
+        }
+        
+        if (game.activePlayer === 'white') {
+            game.whiteTime--;
+            if (game.whiteTime <= 0) {
+                game.whiteTime = 0;
+                stopClock();
+                handleTimeExpired('white');
+            }
+        } else {
+            game.blackTime--;
+            if (game.blackTime <= 0) {
+                game.blackTime = 0;
+                stopClock();
+                handleTimeExpired('black');
+            }
+        }
+        
+        updateClockDisplay();
+        
+        if (game.mode === 'online' && game.socket && game.roomId) {
+            const time = game.activePlayer === 'white' ? game.whiteTime : game.blackTime;
+            game.socket.emit('clock-update', {
+                roomId: game.roomId,
+                color: game.activePlayer,
+                time: time
+            });
+        }
+    }, 1000);
+}
+
+function stopClock() {
+    if (game.clockInterval) {
+        clearInterval(game.clockInterval);
+        game.clockInterval = null;
+    }
+}
+
+function updateClockDisplay() {
+    const whiteDisplay = formatTime(game.whiteTime);
+    const blackDisplay = formatTime(game.blackTime);
+    
+    const currentClock = document.getElementById('currentPlayerClock');
+    const opponentClock = document.getElementById('opponentClock');
+    
+    if (game.timeControl === 0) {
+        currentClock.style.display = 'none';
+        opponentClock.style.display = 'none';
+        return;
+    } else {
+        currentClock.style.display = 'block';
+        opponentClock.style.display = 'block';
+    }
+    
+    if (game.mode === 'online') {
+        if (game.playerColor === 'white') {
+            currentClock.textContent = whiteDisplay;
+            opponentClock.textContent = blackDisplay;
+        } else {
+            currentClock.textContent = blackDisplay;
+            opponentClock.textContent = whiteDisplay;
+        }
+    } else {
+        currentClock.textContent = whiteDisplay;
+        opponentClock.textContent = blackDisplay;
+    }
+    
+    if (game.whiteTime <= 20 && game.whiteTime > 0) {
+        if (game.playerColor === 'white' || game.mode === 'local') {
+            currentClock.classList.add('low-time');
+        }
+    } else {
+        currentClock.classList.remove('low-time');
+    }
+    
+    if (game.blackTime <= 20 && game.blackTime > 0) {
+        if (game.playerColor === 'black' || game.mode === 'local') {
+            opponentClock.classList.add('low-time');
+        }
+    } else {
+        opponentClock.classList.remove('low-time');
+    }
+}
+
+function formatTime(seconds) {
+    if (seconds < 0) seconds = 0;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function handleTimeExpired(color) {
+    game.gameOver = true;
+    const winner = color === 'white' ? 'Black' : 'White';
+    showGameOverModal(`Time expired! ${winner} wins!`, winner);
+    
+    if (game.mode === 'online' && game.socket && game.roomId) {
+        game.socket.emit('time-expired', { roomId: game.roomId, color });
+    }
+}
+
+function updatePlayerNames() {
+    if (game.mode === 'online') {
+        document.getElementById('currentPlayerName').textContent = 'You';
+        document.getElementById('opponentName').textContent = 'Opponent';
+        
+        if (game.playerColor === 'white') {
+            document.getElementById('currentAvatar').textContent = '♔';
+            document.getElementById('opponentAvatar').textContent = '♚';
+        } else {
+            document.getElementById('currentAvatar').textContent = '♚';
+            document.getElementById('opponentAvatar').textContent = '♔';
+        }
+    } else {
+        document.getElementById('currentPlayerName').textContent = 'White';
+        document.getElementById('opponentName').textContent = 'Black';
+        document.getElementById('currentAvatar').textContent = '♔';
+        document.getElementById('opponentAvatar').textContent = '♚';
+    }
+}
+
+document.querySelectorAll('.panel-tab').forEach(tab => {
+    tab.onclick = () => {
+        document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        
+        tab.classList.add('active');
+        const tabName = tab.dataset.tab;
+        document.getElementById(tabName + 'Panel').classList.add('active');
+    };
+});
+
+document.getElementById('sendChatBtn').onclick = sendChatMessage;
+document.getElementById('chatInput').onkeypress = (e) => {
+    if (e.key === 'Enter') sendChatMessage();
+};
+
+function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message || game.mode !== 'online') return;
+    
+    if (game.socket && game.roomId) {
+        game.socket.emit('chat-message', {
+            roomId: game.roomId,
+            message: message,
+            sender: game.playerColor
+        });
+    }
+    
+    input.value = '';
+}
+
+function displayChatMessage(msg, isOwn) {
+    const chatMessages = document.getElementById('chatMessages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-message ${isOwn ? 'own' : 'opponent'}`;
+    msgDiv.textContent = msg.message;
+    chatMessages.appendChild(msgDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function render(){
@@ -384,13 +672,14 @@ function render(){
 
     for(let r=0;r<8;r++) for(let c=0;c<8;c++){
         const sq=document.createElement("div");
-        sq.className="square "+((r+c)%2===0?"dark":"light");
+        sq.className="square "+((r+c)%2===0?"light":"dark");
 
         const piece=game.board[r][c];
         if(piece){
             const span=document.createElement("span");
-            span.className="piece";
-            span.textContent=pieces[getColor(piece)][piece.toLowerCase()];
+            const pieceColor = getColor(piece);
+            span.className = `piece ${pieceColor}-piece`;
+            span.textContent=pieces[pieceColor][piece.toLowerCase()];
             sq.appendChild(span);
         }
 
@@ -412,10 +701,6 @@ function render(){
         sq.onclick=()=>handleClick(r,c);
         board.appendChild(sq);
     }
-
-    if(!game.gameOver)
-        document.getElementById("status").textContent=
-            game.turn.charAt(0).toUpperCase()+game.turn.slice(1)+"'s Turn";
 }
 
 function handleClick(r,c){
@@ -440,37 +725,75 @@ function handleClick(r,c){
     render();
 }
 
-document.getElementById("resetBtn").onclick=()=>{ 
-    if(game.mode === 'online' && game.socket && game.roomId) {
-        game.socket.emit('reset-game', game.roomId);
+function showPromotionModal(color){
+    const modal=document.getElementById("promotionModal");
+    modal.querySelectorAll("button").forEach(btn=>{
+        btn.textContent=pieces[color][btn.dataset.piece];
+    });
+    modal.classList.add("active");
+    modal.querySelectorAll("button").forEach(btn=>{
+        btn.onclick=()=>{
+            const type=btn.dataset.piece;
+            const promoted=color==="white"?type.toUpperCase():type;
+            modal.classList.remove("active");
+            const {fr,fc,tr,tc,flags}=game.promotion;
+            executeMove(fr,fc,tr,tc,promoted,flags);
+        };
+    });
+}
+
+function showGameOverModal(message, winner) {
+    const modal = document.getElementById("gameOverModal");
+    const title = document.getElementById("gameOverTitle");
+    const msg = document.getElementById("gameOverMessage");
+    const okBtn = document.getElementById("gameOverBtn");
+    const rematchSection = document.getElementById("rematchSection");
+    const rematchBtn = document.getElementById("rematchBtn");
+    
+    if(winner) {
+        title.textContent = `${winner} Wins! 🎉`;
+        msg.textContent = message;
+    } else {
+        title.textContent = "Draw";
+        msg.textContent = message;
     }
-    setupBoard(); 
-    render(); 
+    
+    if(game.mode === 'online') {
+        okBtn.style.display = "none";
+        rematchSection.style.display = "block";
+        document.getElementById("rematchStatus").textContent = "Would you like to play again?";
+        rematchBtn.disabled = false;
+        rematchBtn.textContent = "Play Again";
+        game.rematchRequested = false;
+    } else {
+        okBtn.style.display = "block";
+        rematchSection.style.display = "none";
+    }
+    
+    modal.classList.add("active");
+}
+
+document.getElementById("gameOverBtn").onclick = () => {
+    document.getElementById("gameOverModal").classList.remove("active");
 };
 
-document.getElementById("offerDrawBtn").onclick = () => {
+document.getElementById("rematchBtn").onclick = () => {
+    console.log('Rematch button clicked');
     if(game.socket && game.roomId) {
-        game.socket.emit('offer-draw', game.roomId);
-        alert('Draw offer sent to opponent');
+        console.log('Sending rematch request to room:', game.roomId);
+        game.socket.emit('rematch-request', game.roomId);
+        document.getElementById("rematchStatus").textContent = "Waiting for opponent...";
+        document.getElementById("rematchBtn").disabled = true;
     }
 };
 
-document.getElementById("leaveRoomBtn").onclick = () => {
-    if(confirm('Are you sure you want to leave? Your opponent will win.')) {
-        if(game.socket && game.roomId) {
-            game.socket.emit('leave-room', game.roomId);
-        }
-        showModeSelection();
+document.getElementById("declineRematchBtn").onclick = () => {
+    if(game.socket && game.roomId) {
+        game.socket.emit('rematch-response', { roomId: game.roomId, accepted: false });
+        game.socket.emit('leave-room', game.roomId);
     }
-};
-
-document.getElementById("exitGameBtn").onclick = () => {
-    if(confirm('Are you sure you want to exit to menu?')) {
-        if(game.socket && game.roomId) {
-            game.socket.emit('leave-room', game.roomId);
-        }
-        showModeSelection();
-    }
+    document.getElementById("gameOverModal").classList.remove("active");
+    showLandingPage();
 };
 
 document.getElementById("acceptDrawBtn").onclick = () => {
@@ -487,42 +810,58 @@ document.getElementById("declineDrawBtn").onclick = () => {
     document.getElementById("drawOfferModal").classList.remove("active");
 };
 
-document.getElementById("localModeBtn").onclick = () => {
-    game.mode = 'local';
-    showGameScreen();
-    setupBoard();
-    render();
+document.getElementById("offerDrawBtn").onclick = () => {
+    if(game.socket && game.roomId) {
+        game.socket.emit('offer-draw', game.roomId);
+        alert('Draw offer sent to opponent');
+    }
 };
 
-document.getElementById("onlineModeBtn").onclick = () => {
-    game.mode = 'online';
-    showRoomSetup();
+document.getElementById("resignBtn").onclick = () => {
+    if(confirm('Are you sure you want to resign?')) {
+        if(game.socket && game.roomId) {
+            game.socket.emit('resign', { roomId: game.roomId, color: game.playerColor });
+        }
+        game.gameOver = true;
+        stopClock();
+        const winner = game.playerColor === 'white' ? 'Black' : 'White';
+        showGameOverModal(`You resigned. ${winner} wins!`, winner);
+    }
 };
 
-document.getElementById("backToModeBtn").onclick = () => {
-    showModeSelection();
+document.getElementById("exitGameBtn").onclick = () => {
+    if(confirm('Are you sure you want to exit?')) {
+        if(game.socket && game.roomId) {
+            game.socket.emit('leave-room', game.roomId);
+        }
+        stopClock();
+        showLandingPage();
+    }
 };
 
-document.getElementById("whiteColorBtn").onclick = () => {
+document.getElementById('whiteColorBtn').onclick = () => {
     game.selectedColor = 'white';
-    document.getElementById("whiteColorBtn").classList.add("active");
-    document.getElementById("blackColorBtn").classList.remove("active");
+    document.getElementById('whiteColorBtn').classList.add('active');
+    document.getElementById('blackColorBtn').classList.remove('active');
 };
 
-document.getElementById("blackColorBtn").onclick = () => {
+document.getElementById('blackColorBtn').onclick = () => {
     game.selectedColor = 'black';
-    document.getElementById("blackColorBtn").classList.add("active");
-    document.getElementById("whiteColorBtn").classList.remove("active");
+    document.getElementById('blackColorBtn').classList.add('active');
+    document.getElementById('whiteColorBtn').classList.remove('active');
 };
 
-document.getElementById("createRoomBtn").onclick = () => {
+document.getElementById('createRoomBtn').onclick = () => {
     connectSocket();
-    game.socket.emit('create-room', game.selectedColor);
+    game.socket.emit('create-room', {
+        preferredColor: game.selectedColor,
+        timeControl: game.timeControl
+    });
     showWaitingScreen();
 };
 
-document.getElementById("joinRoomBtn").onclick = () => {
-    const roomId = document.getElementById("roomIdInput").value.trim().toUpperCase();
+document.getElementById('joinRoomBtn').onclick = () => {
+    const roomId = document.getElementById('roomIdInput').value.trim().toUpperCase();
     if(!roomId) {
         alert('Please enter a room code');
         return;
@@ -531,21 +870,21 @@ document.getElementById("joinRoomBtn").onclick = () => {
     game.socket.emit('join-room', roomId);
 };
 
-document.getElementById("copyRoomBtn").onclick = () => {
-    const code = document.getElementById("displayRoomCode").textContent;
+document.getElementById('copyRoomBtn').onclick = () => {
+    const code = document.getElementById('displayRoomCode').textContent;
     navigator.clipboard.writeText(code);
-    document.getElementById("copyRoomBtn").textContent = 'Copied!';
+    document.getElementById('copyRoomBtn').textContent = 'Copied!';
     setTimeout(() => {
-        document.getElementById("copyRoomBtn").textContent = 'Copy Code';
+        document.getElementById('copyRoomBtn').textContent = 'Copy Code';
     }, 2000);
 };
 
-document.getElementById("cancelWaitBtn").onclick = () => {
+document.getElementById('cancelWaitBtn').onclick = () => {
     if(game.socket) {
         game.socket.disconnect();
         game.socket = null;
     }
-    showModeSelection();
+    showLandingPage();
 };
 
 function connectSocket() {
@@ -556,56 +895,103 @@ function connectSocket() {
     game.socket.on('room-created', (data) => {
         game.roomId = data.roomId;
         game.playerColor = data.color;
-        document.getElementById("displayRoomCode").textContent = data.roomId;
+        game.timeControl = data.timeControl;
+        document.getElementById('displayRoomCode').textContent = data.roomId;
     });
     
     game.socket.on('room-joined', (data) => {
         game.roomId = data.roomId;
         game.playerColor = data.color;
+        game.timeControl = data.timeControl;
         showGameScreen();
         setupBoard();
+        initializeClock();
         render();
-        updatePlayerInfo();
+        updatePlayerNames();
         showOnlineButtons();
+        showChatForOnline();
     });
     
     game.socket.on('opponent-joined', (data) => {
         game.playerColor = data.color;
+        game.timeControl = data.timeControl;
         showGameScreen();
         setupBoard();
+        initializeClock();
         render();
-        updatePlayerInfo();
+        updatePlayerNames();
         showOnlineButtons();
+        showChatForOnline();
     });
     
     game.socket.on('opponent-move', (move) => {
         executeMove(move.fr, move.fc, move.tr, move.tc, move.promoted, move.flags);
     });
     
+    game.socket.on('switch-clock', () => {
+    });
+    
+    game.socket.on('opponent-clock-update', (data) => {
+        if (data.color === 'white') {
+            game.whiteTime = data.time;
+        } else {
+            game.blackTime = data.time;
+        }
+        updateClockDisplay();
+    });
+    
+    game.socket.on('game-over-time', (data) => {
+        game.gameOver = true;
+        stopClock();
+        const winner = data.loser === 'white' ? 'Black' : 'White';
+        showGameOverModal(`Time expired! ${winner} wins!`, winner);
+    });
+    
+    game.socket.on('chat-message', (msg) => {
+        const isOwn = msg.sender === game.playerColor;
+        displayChatMessage(msg, isOwn);
+    });
+    
+    game.socket.on('chat-history', (history) => {
+        history.forEach(msg => {
+            const isOwn = msg.sender === game.playerColor;
+            displayChatMessage(msg, isOwn);
+        });
+    });
+    
     game.socket.on('game-reset', () => {
         setupBoard();
+        initializeClock();
         render();
     });
     
     game.socket.on('draw-offered', () => {
-        document.getElementById("drawOfferModal").classList.add("active");
+        document.getElementById('drawOfferModal').classList.add('active');
     });
     
     game.socket.on('draw-accepted', () => {
-        document.getElementById("drawOfferModal").classList.remove("active");
-        showGameOverModal("Draw by agreement", null);
+        document.getElementById('drawOfferModal').classList.remove('active');
+        showGameOverModal('Draw by agreement', null);
         game.gameOver = true;
+        stopClock();
     });
     
     game.socket.on('draw-declined', () => {
         alert('Draw offer declined');
     });
     
+    game.socket.on('player-resigned', (data) => {
+        game.gameOver = true;
+        stopClock();
+        const winner = data.color === 'white' ? 'Black' : 'White';
+        showGameOverModal(`Opponent resigned. ${winner} wins!`, winner);
+    });
+    
     game.socket.on('rematch-requested', () => {
         console.log('Opponent requested rematch');
-        document.getElementById("rematchStatus").textContent = "Opponent wants to play again!";
-        document.getElementById("rematchBtn").disabled = false;
-        document.getElementById("rematchBtn").textContent = "Accept & Play Again";
+        document.getElementById('rematchStatus').textContent = 'Opponent wants to play again!';
+        document.getElementById('rematchBtn').disabled = false;
+        document.getElementById('rematchBtn').textContent = 'Accept & Play Again';
     });
     
     game.socket.on('rematch-accepted', (data) => {
@@ -617,20 +1003,25 @@ function connectSocket() {
             game.playerColor = 'black';
         }
         
-        document.getElementById("gameOverModal").classList.remove("active");
-        document.getElementById("rematchBtn").disabled = false;
+        game.timeControl = data.timeControl;
+        
+        document.getElementById('gameOverModal').classList.remove('active');
+        document.getElementById('rematchBtn').disabled = false;
         game.rematchRequested = false;
         game.gameOver = false;
         
+        document.getElementById('chatMessages').innerHTML = '';
+        
         setupBoard();
-        updatePlayerInfo();
+        initializeClock();
+        updatePlayerNames();
         render();
     });
     
     game.socket.on('rematch-declined', () => {
         alert('Opponent declined rematch');
-        document.getElementById("gameOverModal").classList.remove("active");
-        showModeSelection();
+        document.getElementById('gameOverModal').classList.remove('active');
+        showLandingPage();
     });
     
     game.socket.on('game-ended', () => {
@@ -638,68 +1029,36 @@ function connectSocket() {
     
     game.socket.on('opponent-left', () => {
         alert('Opponent left the game. You win!');
-        document.getElementById("gameOverModal").classList.remove("active");
-        showModeSelection();
+        document.getElementById('gameOverModal').classList.remove('active');
+        stopClock();
+        showLandingPage();
     });
     
     game.socket.on('opponent-disconnected', () => {
         alert('Opponent disconnected');
-        document.getElementById("gameOverModal").classList.remove("active");
-        showModeSelection();
+        document.getElementById('gameOverModal').classList.remove('active');
+        stopClock();
+        showLandingPage();
     });
     
     game.socket.on('room-error', (message) => {
         alert(message);
         showRoomSetup();
     });
-}
-
-function updatePlayerInfo() {
-    if(game.mode === 'online' && game.playerColor) {
-        document.getElementById("playerInfo").textContent = 
-            `You are playing as ${game.playerColor.charAt(0).toUpperCase() + game.playerColor.slice(1)}`;
-    } else {
-        document.getElementById("playerInfo").textContent = '';
-    }
+    
+    game.socket.on('connect_error', () => {
+        console.error('Connection error');
+        alert('Unable to connect to server. Please check your internet connection.');
+    });
+    
+    game.socket.on('reconnect', () => {
+        console.log('Reconnected to server');
+    });
 }
 
 function showOnlineButtons() {
-    document.getElementById("offerDrawBtn").style.display = "inline-block";
-    document.getElementById("leaveRoomBtn").style.display = "inline-block";
+    document.getElementById('offerDrawBtn').style.display = 'flex';
+    document.getElementById('resignBtn').style.display = 'flex';
 }
 
-function showModeSelection() {
-    document.getElementById("modeSelection").style.display = "flex";
-    document.getElementById("roomSetup").style.display = "none";
-    document.getElementById("waitingScreen").style.display = "none";
-    document.getElementById("gameScreen").style.display = "none";
-    document.getElementById("offerDrawBtn").style.display = "none";
-    document.getElementById("leaveRoomBtn").style.display = "none";
-    game.mode = null;
-    game.playerColor = null;
-    game.roomId = null;
-}
-
-function showRoomSetup() {
-    document.getElementById("modeSelection").style.display = "none";
-    document.getElementById("roomSetup").style.display = "flex";
-    document.getElementById("waitingScreen").style.display = "none";
-    document.getElementById("gameScreen").style.display = "none";
-    document.getElementById("roomIdInput").value = '';
-}
-
-function showWaitingScreen() {
-    document.getElementById("modeSelection").style.display = "none";
-    document.getElementById("roomSetup").style.display = "none";
-    document.getElementById("waitingScreen").style.display = "flex";
-    document.getElementById("gameScreen").style.display = "none";
-}
-
-function showGameScreen() {
-    document.getElementById("modeSelection").style.display = "none";
-    document.getElementById("roomSetup").style.display = "none";
-    document.getElementById("waitingScreen").style.display = "none";
-    document.getElementById("gameScreen").style.display = "flex";
-}
-
-showModeSelection();
+showLandingPage();
