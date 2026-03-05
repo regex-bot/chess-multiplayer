@@ -16,7 +16,8 @@ const rooms = new Map();
 io.on('connection', (socket) => {
     console.log('New client connected:', socket.id);
 
-    socket.on('create-room', (preferredColor) => {
+    socket.on('create-room', (data) => {
+        const { preferredColor, timeControl } = data;
         const roomId = generateRoomId();
         
         rooms.set(roomId, {
@@ -24,12 +25,16 @@ io.on('connection', (socket) => {
             white: preferredColor === 'white' ? socket.id : null,
             black: preferredColor === 'black' ? socket.id : null,
             creatorColor: preferredColor,
-            gameState: null
+            timeControl: timeControl,
+            whiteTime: timeControl,
+            blackTime: timeControl,
+            gameState: null,
+            chatHistory: []
         });
 
         socket.join(roomId);
-        socket.emit('room-created', { roomId, color: preferredColor });
-        console.log(`Room ${roomId} created by ${socket.id} as ${preferredColor}`);
+        socket.emit('room-created', { roomId, color: preferredColor, timeControl });
+        console.log(`Room ${roomId} created by ${socket.id} as ${preferredColor}, time: ${timeControl}s`);
     });
 
     socket.on('join-room', (roomId) => {
@@ -56,9 +61,11 @@ io.on('connection', (socket) => {
         
         socket.join(roomId);
 
-        socket.emit('room-joined', { roomId, color: joinerColor });
-        io.to(room.white).emit('opponent-joined', { color: 'white' });
-        io.to(room.black).emit('opponent-joined', { color: 'black' });
+        socket.emit('room-joined', { roomId, color: joinerColor, timeControl: room.timeControl });
+        io.to(room.white).emit('opponent-joined', { color: 'white', timeControl: room.timeControl });
+        io.to(room.black).emit('opponent-joined', { color: 'black', timeControl: room.timeControl });
+
+        socket.emit('chat-history', room.chatHistory);
 
         console.log(`${socket.id} joined room ${roomId} as ${joinerColor}`);
     });
@@ -70,10 +77,54 @@ io.on('connection', (socket) => {
         if (!room) return;
 
         socket.to(roomId).emit('opponent-move', move);
+        
+        if (room.timeControl > 0) {
+            io.to(roomId).emit('switch-clock');
+        }
+        
         console.log(`Move made in room ${roomId}:`, move);
     });
 
+    socket.on('clock-update', (data) => {
+        const { roomId, color, time } = data;
+        const room = rooms.get(roomId);
+        
+        if (!room) return;
+        
+        if (color === 'white') {
+            room.whiteTime = time;
+        } else {
+            room.blackTime = time;
+        }
+        
+        socket.to(roomId).emit('opponent-clock-update', { color, time });
+    });
+
+    socket.on('time-expired', (data) => {
+        const { roomId, color } = data;
+        io.to(roomId).emit('game-over-time', { loser: color });
+        console.log(`Time expired for ${color} in room ${roomId}`);
+    });
+
+    socket.on('chat-message', (data) => {
+        const { roomId, message, sender } = data;
+        const room = rooms.get(roomId);
+        
+        if (!room) return;
+        
+        const chatMsg = { message, sender, timestamp: Date.now() };
+        room.chatHistory.push(chatMsg);
+        
+        io.to(roomId).emit('chat-message', chatMsg);
+        console.log(`Chat in room ${roomId}: ${message}`);
+    });
+
     socket.on('reset-game', (roomId) => {
+        const room = rooms.get(roomId);
+        if (room && room.timeControl > 0) {
+            room.whiteTime = room.timeControl;
+            room.blackTime = room.timeControl;
+        }
         socket.to(roomId).emit('game-reset');
         console.log(`Game reset in room ${roomId}`);
     });
@@ -91,6 +142,12 @@ io.on('connection', (socket) => {
             socket.to(roomId).emit('draw-declined');
         }
         console.log(`Draw ${accepted ? 'accepted' : 'declined'} in room ${roomId}`);
+    });
+
+    socket.on('resign', (data) => {
+        const { roomId, color } = data;
+        io.to(roomId).emit('player-resigned', { color });
+        console.log(`${color} resigned in room ${roomId}`);
     });
 
     socket.on('rematch-request', (roomId) => {
@@ -114,12 +171,20 @@ io.on('connection', (socket) => {
             room.creatorColor = room.creatorColor === 'white' ? 'black' : 'white';
             room.rematchRequests.clear();
             
+            if (room.timeControl > 0) {
+                room.whiteTime = room.timeControl;
+                room.blackTime = room.timeControl;
+            }
+            
+            room.chatHistory = [];
+            
             console.log(`Both players agreed! Swapping colors in room ${roomId}`);
             console.log(`New white: ${room.white}, New black: ${room.black}`);
             
             io.to(roomId).emit('rematch-accepted', {
                 white: room.white,
-                black: room.black
+                black: room.black,
+                timeControl: room.timeControl
             });
         } else {
             socket.to(roomId).emit('rematch-requested');
