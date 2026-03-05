@@ -3,32 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Game</title>
+    <title>Chess Online - Play Free Chess</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Mode Selection Screen -->
-    <div id="modeSelection" class="mode-screen">
-        <div class="mode-content">
-            <h1>Chess Game</h1>
-            <p>Choose Game Mode</p>
-            <div class="mode-buttons">
-                <button id="localModeBtn" class="mode-btn">
-                    <span class="mode-title">Local Multiplayer</span>
-                    <span class="mode-desc">Play on same device</span>
-                </button>
-                <button id="onlineModeBtn" class="mode-btn">
-                    <span class="mode-title">Online Multiplayer</span>
-                    <span class="mode-desc">Play with someone online</span>
-                </button>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">♔</span>
+                <span class="logo-text">Chess Online</span>
+            </div>
+            <div class="nav-links">
+                <a href="#" id="navHome">Home</a>
+                <a href="#" id="navPlay">Play</a>
+                <a href="#" id="navAbout">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Page -->
+    <div id="landingPage" class="landing-page">
+        <div class="hero-section">
+            <h1 class="hero-title">Play Chess Online</h1>
+            <p class="hero-subtitle">Challenge friends or play locally. Free forever.</p>
+            <button id="playNowBtn" class="cta-button">Play Now</button>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Fast & Free</h3>
+                <p>No registration required. Start playing instantly.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>Online Multiplayer</h3>
+                <p>Play with friends worldwide using room codes.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⏱️</div>
+                <h3>Timed Games</h3>
+                <p>Choose your time control or play without clock.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3>Live Chat</h3>
+                <p>Chat with your opponent during the game.</p>
+            </div>
+        </div>
+        
+        <!-- About Section -->
+        <div id="aboutSection" class="about-section">
+            <div class="about-content">
+                <h2>About Chess Online</h2>
+                <p>Chess Online is a free, web-based chess platform that brings the classic game to your browser. Whether you want to play a quick game with a friend sitting next to you or challenge someone across the globe, we've got you covered.</p>
+                
+                <h3>Features</h3>
+                <ul class="about-features">
+                    <li><strong>Full FIDE Rules:</strong> All standard chess rules including castling, en passant, pawn promotion, check, checkmate, and stalemate.</li>
+                    <li><strong>Local Multiplayer:</strong> Play on the same device with a friend.</li>
+                    <li><strong>Online Multiplayer:</strong> Create or join rooms using simple room codes.</li>
+                    <li><strong>Flexible Time Controls:</strong> Choose from multiple time formats (3, 5, 10, 15, 30 minutes) or play without a clock.</li>
+                    <li><strong>Live Chat:</strong> Communicate with your opponent during online games.</li>
+                    <li><strong>Move History:</strong> Track all moves with standard chess notation.</li>
+                    <li><strong>Draw & Rematch:</strong> Offer draws and request rematches seamlessly.</li>
+                </ul>
+                
+                <h3>How to Play</h3>
+                <p>Click "Play Now" to get started. Choose between local or online multiplayer, select your preferred time control, and start playing! For online games, simply create a room and share the code with your friend, or join an existing room.</p>
             </div>
         </div>
     </div>
 
-    <!-- Online Room Setup -->
-    <div id="roomSetup" class="mode-screen" style="display: none;">
+    <!-- Mode Selection Screen -->
+    <div id="modeSelection" class="mode-screen" style="display: none;">
+        <div class="mode-content">
+            <h1>Choose Game Mode</h1>
+            <div class="mode-cards">
+                <div class="game-mode-card" id="localModeCard">
+                    <div class="mode-card-icon">🖥️</div>
+                    <h3>Local Game</h3>
+                    <p>Play on the same device</p>
+                    <button class="mode-select-btn">Play Local</button>
+                </div>
+                <div class="game-mode-card" id="onlineModeCard">
+                    <div class="mode-card-icon">🌐</div>
+                    <h3>Online Game</h3>
+                    <p>Play with friends online</p>
+                    <button class="mode-select-btn">Play Online</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Online Room Selection Screen -->
+    <div id="onlineRoomSelection" class="mode-screen" style="display: none;">
         <div class="mode-content">
             <h1>Online Multiplayer</h1>
+            <div class="mode-cards">
+                <div class="game-mode-card" id="createRoomCard">
+                    <div class="mode-card-icon">➕</div>
+                    <h3>Create Game</h3>
+                    <p>Start a new game and invite a friend</p>
+                    <button class="mode-select-btn">Create Room</button>
+                </div>
+                <div class="game-mode-card" id="joinRoomCard">
+                    <div class="mode-card-icon">🔗</div>
+                    <h3>Join Game</h3>
+                    <p>Enter a room code to join</p>
+                    <button class="mode-select-btn">Join Room</button>
+                </div>
+            </div>
+            <button class="back-btn" id="backFromOnlineRoom">Back</button>
+        </div>
+    </div>
+
+    <!-- Time Control Selection -->
+    <div id="timeControlScreen" class="mode-screen" style="display: none;">
+        <div class="mode-content">
+            <h1>Choose Time Control</h1>
+            <div class="time-controls">
+                <div class="time-card" data-time="0">
+                    <h3>No Clock</h3>
+                    <p>Unlimited time</p>
+                </div>
+                <div class="time-card" data-time="180">
+                    <h3>3 min</h3>
+                    <p>Blitz</p>
+                </div>
+                <div class="time-card" data-time="300">
+                    <h3>5 min</h3>
+                    <p>Blitz</p>
+                </div>
+                <div class="time-card" data-time="600">
+                    <h3>10 min</h3>
+                    <p>Rapid</p>
+                </div>
+                <div class="time-card" data-time="900">
+                    <h3>15 min</h3>
+                    <p>Rapid</p>
+                </div>
+                <div class="time-card" data-time="1800">
+                    <h3>30 min</h3>
+                    <p>Classical</p>
+                </div>
+            </div>
+            <button id="backToModeBtn" class="back-btn">← Back</button>
+        </div>
+    </div>
+
+    <!-- Online Room Setup (Create) -->
+    <div id="roomSetup" class="mode-screen" style="display: none;">
+        <div class="mode-content">
+            <h1>Create New Game</h1>
             <div class="room-options">
                 <div class="color-selection">
                     <label>Choose Your Color:</label>
@@ -37,12 +165,21 @@
                         <button id="blackColorBtn" class="color-btn">Black</button>
                     </div>
                 </div>
-                <button id="createRoomBtn" class="mode-btn">Create New Game</button>
-                <div class="divider">OR</div>
+                <button id="createRoomBtn" class="mode-btn">Create Room</button>
+            </div>
+            <button id="backToTimeBtn" class="back-btn">← Back</button>
+        </div>
+    </div>
+
+    <!-- Online Room Join -->
+    <div id="joinRoomScreen" class="mode-screen" style="display: none;">
+        <div class="mode-content">
+            <h1>Join Game</h1>
+            <div class="room-options">
                 <input type="text" id="roomIdInput" placeholder="Enter Room Code">
                 <button id="joinRoomBtn" class="mode-btn">Join Game</button>
             </div>
-            <button id="backToModeBtn" class="back-btn">← Back</button>
+            <button id="backToTimeFromJoin" class="back-btn">← Back</button>
         </div>
     </div>
 
@@ -61,25 +198,91 @@
     </div>
 
     <!-- Game Screen -->
-    <div id="gameScreen" class="container" style="display: none;">
-        <div class="game-info">
-            <h1>Chess</h1>
-            <div id="playerInfo" style="margin: 10px 0; font-size: 14px;"></div>
-            <div id="status">White's Turn</div>
-            <div class="game-controls">
-                <button id="resetBtn">New Game</button>
-                <button id="offerDrawBtn" style="display: none;">Offer Draw</button>
-                <button id="leaveRoomBtn" style="display: none;">Leave Room</button>
-                <button id="exitGameBtn">Exit to Menu</button>
+    <div id="gameScreen" class="game-container" style="display: none;">
+        <div class="game-header">
+            <div class="player-info opponent-info">
+                <div class="player-avatar" id="opponentAvatar">♚</div>
+                <div class="player-details">
+                    <div class="player-name" id="opponentName">Opponent</div>
+                    <div class="player-clock" id="opponentClock">--:--</div>
+                </div>
             </div>
         </div>
-        <div class="game-layout">
-            <div class="board-container">
-                <div id="chessboard"></div>
+
+        <div class="game-main">
+            <div class="game-left">
+                <div class="board-wrapper">
+                    <div class="board-with-coords">
+                        <div class="rank-labels">
+                            <div class="rank-label">8</div>
+                            <div class="rank-label">7</div>
+                            <div class="rank-label">6</div>
+                            <div class="rank-label">5</div>
+                            <div class="rank-label">4</div>
+                            <div class="rank-label">3</div>
+                            <div class="rank-label">2</div>
+                            <div class="rank-label">1</div>
+                        </div>
+                        <div class="board-and-files">
+                            <div id="chessboard"></div>
+                            <div class="file-labels">
+                                <div class="file-label">a</div>
+                                <div class="file-label">b</div>
+                                <div class="file-label">c</div>
+                                <div class="file-label">d</div>
+                                <div class="file-label">e</div>
+                                <div class="file-label">f</div>
+                                <div class="file-label">g</div>
+                                <div class="file-label">h</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="move-history">
-                <h3>Move History</h3>
-                <div id="moveList"></div>
+
+            <div class="game-right">
+                <div class="game-panel">
+                    <div class="panel-tabs">
+                        <button class="panel-tab active" data-tab="moves">Moves</button>
+                        <button class="panel-tab" data-tab="chat">Chat</button>
+                    </div>
+                    
+                    <div class="panel-content">
+                        <div id="movesPanel" class="tab-panel active">
+                            <div id="moveList" class="move-list"></div>
+                        </div>
+                        
+                        <div id="chatPanel" class="tab-panel">
+                            <div id="chatMessages" class="chat-messages"></div>
+                            <div class="chat-input-container">
+                                <input type="text" id="chatInput" placeholder="Type a message..." maxlength="200">
+                                <button id="sendChatBtn">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-controls">
+                    <button id="offerDrawBtn" class="control-btn" style="display: none;">
+                        <span>🤝</span> Draw
+                    </button>
+                    <button id="resignBtn" class="control-btn" style="display: none;">
+                        <span>🏳️</span> Resign
+                    </button>
+                    <button id="exitGameBtn" class="control-btn">
+                        <span>🚪</span> Exit
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-footer">
+            <div class="player-info current-player-info">
+                <div class="player-avatar" id="currentAvatar">♔</div>
+                <div class="player-details">
+                    <div class="player-name" id="currentPlayerName">You</div>
+                    <div class="player-clock" id="currentPlayerClock">--:--</div>
+                </div>
             </div>
         </div>
     </div>
@@ -89,10 +292,10 @@
         <div class="modal-content">
             <h2>Choose Promotion</h2>
             <div class="promotion-choices">
-                <button data-piece="q">♛ Queen</button>
-                <button data-piece="r">♜ Rook</button>
-                <button data-piece="b">♝ Bishop</button>
-                <button data-piece="n">♞ Knight</button>
+                <button data-piece="q">♛</button>
+                <button data-piece="r">♜</button>
+                <button data-piece="b">♝</button>
+                <button data-piece="n">♞</button>
             </div>
         </div>
     </div>
@@ -104,7 +307,7 @@
             <p id="gameOverMessage"></p>
             <div id="rematchSection" style="display: none;">
                 <p id="rematchStatus">Waiting for opponent...</p>
-                <div class="draw-buttons">
+                <div class="modal-buttons">
                     <button id="rematchBtn" class="mode-btn">Play Again</button>
                     <button id="declineRematchBtn" class="back-btn">Exit to Menu</button>
                 </div>
@@ -118,7 +321,7 @@
         <div class="modal-content">
             <h2>Draw Offer</h2>
             <p>Your opponent offers a draw. Do you accept?</p>
-            <div class="draw-buttons">
+            <div class="modal-buttons">
                 <button id="acceptDrawBtn" class="mode-btn">Accept</button>
                 <button id="declineDrawBtn" class="back-btn">Decline</button>
             </div>
